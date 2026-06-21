@@ -1,67 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MuTrace Dashboard</title>
+
     <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="container">
+<div class="dashboard">
 
-        <h1>MuTrace Dashboard</h1>
-
-        <div class="stats">
-
-            <div class="card">
-                <h3>Total Participants</h3>
-                <h2 id="participantsCount">0</h2>
+    <header class="header">
+        <div class="header-left">
+            <img src="icons/logo.png" alt="MuTrace" class="logo-image">
+            <div>
+                <h2>MuTrace</h2>
+                <p>Google Meet Attendance Analytics</p>
             </div>
-
-            <div class="card">
-                <h3>Eligible</h3>
-                <h2 id="eligibleCount">0</h2>
-            </div>
-
-            <div class="card">
-                <h3>Average Attendance</h3>
-                <h2 id="averageAttendance">0%</h2>
-            </div>
-
         </div>
 
-        <div class="actions">
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search Participant"
-            >
-
-            <button id="exportBtn">
+        <div class="header-right">
+            <div class="session-info">
+                <span class="live-dot"></span>
+                Live Tracking
+            </div>
+            <div class="timer" id="sessionTimer">
+                00:00:00
+            </div>
+            <button id="exportBtn" class="btn">
                 Export CSV
             </button>
+            <button id="exportEligibleBtn" class="btn primary">
+                Export Eligible
+            </button>
+        </div>
+    </header>
+
+    <section class="session-banner">
+        <div>
+            <h1 id="sessionName">Loading Session...</h1>
+            <p>Attendance Tracking Dashboard</p>
+        </div>
+        <div class="host-section">
+            <label style="font-weight: 600; color: #64748b; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                Active Host(s)
+            </label>
+            <div id="sessionHosts" style="font-size: 1.1rem; font-weight: 500; color: #0f172a; margin-top: 4px;">
+                Loading...
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-grid">
+        <div class="stat-card">
+            <span>Total Participants</span>
+            <h2 id="totalParticipants">0</h2>
+        </div>
+        <div class="stat-card">
+            <span>Currently Present</span>
+            <h2 id="currentlyPresent">0</h2>
+        </div>
+        <div class="stat-card">
+            <span>Eligible</span>
+            <h2 id="eligibleParticipants">0</h2>
+        </div>
+        <div class="stat-card">
+            <span>Average Attendance</span>
+            <h2 id="avgAttendance">0%</h2>
+        </div>
+    </section>
+
+    <section class="charts-row">
+        <div class="chart-card">
+            <div class="card-header">
+                <h3>Attendance Trend</h3>
+            </div>
+            <canvas id="attendanceChart"></canvas>
         </div>
 
-        <table>
+        <div class="leaderboard-card">
+            <div class="card-header">
+                <h3>Top Active Participants</h3>
+            </div>
+            <div id="leaderboard" class="leaderboard">
+                </div>
+        </div>
+    </section>
 
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>First Join</th>
-                    <th>Last Leave</th>
-                    <th>Minutes</th>
-                    <th>Attendance %</th>
-                    <th>Eligible</th>
-                </tr>
-            </thead>
+    <section class="main-content">
+        <div class="table-card">
+            <div class="table-header">
+                <h3>Participant Attendance</h3>
+                <div class="table-actions">
+                    <input type="text" id="searchInput" placeholder="Search participant...">
+                    <select id="filterSelect">
+                        <option value="all">All</option>
+                        <option value="eligible">Eligible</option>
+                        <option value="notEligible">Not Eligible</option>
+                    </select>
+                </div>
+            </div>
 
-            <tbody id="attendanceTable">
-            </tbody>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>First Join</th>
+                            <th>Last Leave</th>
+                            <th>Duration</th>
+                            <th>Attendance %</th>
+                            <th>Status</th>
+                            <th>Eligibility</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTable">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
-        </table>
+        <aside class="insights-panel">
+            <div class="insight-card">
+                <span>Peak Participants</span>
+                <h2 id="peakParticipants">0</h2>
+            </div>
+            <div class="insight-card">
+                <span>Total Attendance Hours</span>
+                <h2 id="attendanceHours">0h</h2>
+            </div>
+            <div class="insight-card">
+                <span>Most Active Participant</span>
+                <h2 id="mostActive">-</h2>
+            </div>
+            <div class="insight-card">
+                <span>Average Session Duration</span>
+                <h2 id="avgDuration">0m</h2>
+            </div>
+        </aside>
+    </section>
 
-    </div>
+</div>
 
-    <script src="dashboard.js"></script>
+<script src="chart.umd.js"></script>
+<script src="dashboard.js"></script>
 
 </body>
 </html>
