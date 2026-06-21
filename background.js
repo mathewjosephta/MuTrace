@@ -1,11 +1,17 @@
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener(
+    (message) => {
 
-    if (message.type === "SAVE_ATTENDANCE") {
+        if (
+            message.type ===
+            "SAVE_ATTENDANCE"
+        ) {
 
-        chrome.storage.local.set({
-            attendance: message.data
-        });
+            chrome.storage.local.set({
+                attendance:
+                message.data
+            });
+
+        }
 
     }
-
-});
+);

@@ -5,183 +5,131 @@ const GRACE_PERIOD = 20000; // 20 seconds
 const meetingStartTime = new Date();
 
 function getParticipants() {
+  const elements = document.querySelectorAll("[data-participant-id]");
 
-    const elements = document.querySelectorAll(
-        '[data-participant-id]'
-    );
+  const participants = [];
 
-    const participants = [];
+  elements.forEach((el) => {
+    const name = el.innerText.trim().split("\n")[0];
 
-    elements.forEach(el => {
+    if (name && !participants.includes(name)) {
+      participants.push(name);
+    }
+  });
 
-        const name = el.innerText
-            .trim()
-            .split("\n")[0];
-
-        if (
-            name &&
-            !participants.includes(name)
-        ) {
-            participants.push(name);
-        }
-
-    });
-
-    return participants;
+  return participants;
 }
 
 setInterval(() => {
+  const now = new Date();
+  const currentParticipants = getParticipants();
 
-    const now = new Date();
-    const currentParticipants = getParticipants();
+  // Handle joins
+  currentParticipants.forEach((name) => {
+    if (!attendance[name]) {
+      attendance[name] = {
+        firstJoin: now,
+        lastLeave: null,
+        totalDuration: 0,
+        lastSeen: now,
+        activeSession: {
+          joinTime: now,
+        },
+        sessions: [],
+      };
 
-    // Handle joins
-    currentParticipants.forEach(name => {
+      console.log(`${name} joined`);
+    } else {
+      attendance[name].lastSeen = now;
 
-        if (!attendance[name]) {
+      // Rejoin
+      if (!attendance[name].activeSession) {
+        attendance[name].activeSession = {
+          joinTime: now,
+        };
 
-            attendance[name] = {
-                firstJoin: now,
-                lastLeave: null,
-                totalDuration: 0,
-                lastSeen: now,
-                activeSession: {
-                    joinTime: now
-                },
-                sessions: []
-            };
+        console.log(`${name} rejoined`);
+      }
+    }
 
-            console.log(`${name} joined`);
+    attendance[name].lastSeen = now;
+  });
 
-        } else {
+  // Handle leaves
+  Object.keys(attendance).forEach((name) => {
+    const user = attendance[name];
 
-            attendance[name].lastSeen = now;
+    if (user.activeSession && !currentParticipants.includes(name)) {
+      const diff = now.getTime() - user.lastSeen.getTime();
 
-            // Rejoin
-            if (!attendance[name].activeSession) {
+      if (diff > GRACE_PERIOD) {
+        const leaveTime = user.lastSeen;
 
-                attendance[name].activeSession = {
-                    joinTime: now
-                };
+        user.activeSession.leaveTime = leaveTime;
 
-                console.log(`${name} rejoined`);
-            }
-        }
+        const duration =
+          leaveTime.getTime() - user.activeSession.joinTime.getTime();
 
-        attendance[name].lastSeen = now;
+        user.totalDuration += duration;
 
+        user.sessions.push(user.activeSession);
+
+        user.activeSession = null;
+
+        user.lastLeave = leaveTime;
+
+        console.log(`${name} left`);
+      }
+    }
+  });
+
+  // Build report
+  const report = [];
+
+  Object.keys(attendance).forEach((name) => {
+    const user = attendance[name];
+
+    let totalDuration = user.totalDuration;
+
+    let lastLeave = user.lastLeave;
+
+    if (user.activeSession) {
+      totalDuration += now.getTime() - user.activeSession.joinTime.getTime();
+
+      lastLeave = now;
+    }
+
+    const meetingDuration = now.getTime() - meetingStartTime.getTime();
+
+    const attendancePercentage =
+      meetingDuration > 0
+        ? ((totalDuration / meetingDuration) * 100).toFixed(1)
+        : 0;
+
+    report.push({
+      Name: name,
+      FirstJoin: user.firstJoin.toLocaleTimeString(),
+
+      LastLeave: lastLeave ? lastLeave.toLocaleTimeString() : "-",
+
+      TotalMinutes: (totalDuration / 60000).toFixed(1),
+
+      AttendancePercent: attendancePercentage + "%",
+
+      Eligible: attendancePercentage >= 50 ? "Yes" : "No",
     });
+  });
 
-    // Handle leaves
-    Object.keys(attendance).forEach(name => {
+  console.clear();
 
-        const user = attendance[name];
+  console.table(report);
 
-        if (
-            user.activeSession &&
-            !currentParticipants.includes(name)
-        ) {
-
-            const diff =
-                now.getTime() -
-                user.lastSeen.getTime();
-
-            if (diff > GRACE_PERIOD) {
-
-                const leaveTime = user.lastSeen;
-
-                user.activeSession.leaveTime =
-                    leaveTime;
-
-                const duration =
-                    leaveTime.getTime() -
-                    user.activeSession.joinTime.getTime();
-
-                user.totalDuration += duration;
-
-                user.sessions.push(
-                    user.activeSession
-                );
-
-                user.activeSession = null;
-
-                user.lastLeave = leaveTime;
-
-                console.log(`${name} left`);
-            }
-        }
-
-    });
-
-    // Build report
-    const report = [];
-
-    Object.keys(attendance).forEach(name => {
-
-        const user = attendance[name];
-
-        let totalDuration =
-            user.totalDuration;
-
-        let lastLeave =
-            user.lastLeave;
-
-        if (user.activeSession) {
-
-            totalDuration +=
-                now.getTime() -
-                user.activeSession.joinTime.getTime();
-
-            lastLeave = now;
-        }
-
-        const meetingDuration =
-            now.getTime() -
-            meetingStartTime.getTime();
-
-        const attendancePercentage =
-            meetingDuration > 0
-                ? (
-                    (totalDuration /
-                        meetingDuration) *
-                    100
-                ).toFixed(1)
-                : 0;
-
-        report.push({
-            Name: name,
-            FirstJoin:
-                user.firstJoin.toLocaleTimeString(),
-
-            LastLeave:
-                lastLeave
-                    ? lastLeave.toLocaleTimeString()
-                    : "-",
-
-            TotalMinutes:
-                (
-                    totalDuration /
-                    60000
-                ).toFixed(1),
-
-            AttendancePercent:
-                attendancePercentage + "%",
-
-            Eligible:
-                attendancePercentage >= 80
-                    ? "Yes"
-                    : "No"
-        });
-
-    });
-
-    console.clear();
-
-    console.table(report);
-
+  try {
     chrome.runtime.sendMessage({
-        type: "SAVE_ATTENDANCE",
-        data: report
+      type: "SAVE_ATTENDANCE",
+      data: report,
     });
-
+  } catch (error) {
+    console.log("Extension reloaded, message skipped");
+  }
 }, 5000);
