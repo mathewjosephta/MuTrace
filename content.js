@@ -4,7 +4,7 @@ const attendance = {};
 const GRACE_PERIOD = 20000; // 20 seconds
 let meetingStartTime = new Date();
 
-// FIX 2: Initialize and save the global meeting start time for the Dashboard
+// Initialize and save the global meeting start time for the Dashboard
 chrome.storage.local.get(["meetingStart"], (result) => {
     if (!result.meetingStart) {
         // If it's a new meeting, save the start time
@@ -19,9 +19,43 @@ function getParticipants() {
   const elements = document.querySelectorAll("[data-participant-id]");
   const participants = [];
 
+  // Expanded blocklist including "person" to filter out UI garbage
+  const blockedNames = [
+      "frame_person",
+      "keep_outline",
+      "devices",
+      "person",
+      "more_vert",
+      "Meeting host",
+      "Admit",
+      "You can't unmute"
+  ];
+
   elements.forEach((el) => {
-    const name = el.innerText.trim().split("\n")[0];
-    if (name && !participants.includes(name)) {
+    // 1. Try to target the specific name element directly
+    const nameElement = el.querySelector('.zWGUib');
+    
+    let name = "";
+    if (nameElement) {
+        name = nameElement.textContent.trim();
+    } else {
+        // Fallback just in case Google updates the UI
+        name = el.innerText.trim().split("\n")[0];
+    }
+
+    if (!name) return;
+
+    // 2. Clean up "(You)" if it exists so the host name is clean
+    name = name.replace(/\(You\)/gi, "").trim();
+
+    // 3. Filter out invalid UI text
+    const isBlocked = blockedNames.some(blocked => name.includes(blocked) || name === blocked);
+    
+    if (isBlocked) {
+        return; // Skip this element completely
+    }
+
+    if (!participants.includes(name)) {
       participants.push(name);
     }
   });
@@ -91,7 +125,7 @@ setInterval(() => {
     const user = attendance[name];
     let totalDuration = user.totalDuration;
 
-    // FIX 1: Proper LastLeave formatting for the Dashboard
+    // Proper LastLeave formatting for the Dashboard
     let displayLastLeave = "-"; 
 
     if (user.activeSession) {
@@ -111,7 +145,7 @@ setInterval(() => {
     report.push({
       Name: name,
       FirstJoin: user.firstJoin.toLocaleTimeString(),
-      LastLeave: displayLastLeave, // Will be "-" if active, or a time if they left
+      LastLeave: displayLastLeave,
       TotalMinutes: (totalDuration / 60000).toFixed(1),
       AttendancePercent: attendancePercentage + "%",
       Eligible: attendancePercentage >= 50 ? "Yes" : "No",
