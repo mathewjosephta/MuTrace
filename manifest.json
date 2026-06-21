@@ -2,23 +2,44 @@
   "manifest_version": 3,
   "name": "MuTrace",
   "version": "1.0",
+
   "permissions": [
     "storage",
-    "downloads"
+    "downloads",
+    "tabs"
   ],
+
   "host_permissions": [
     "https://meet.google.com/*"
   ],
+
   "action": {
     "default_popup": "popup.html"
   },
+
   "background": {
     "service_worker": "background.js"
   },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dashboard.html",
+        "dashboard.js",
+        "dashboard.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
   "content_scripts": [
     {
-      "matches": ["https://meet.google.com/*"],
-      "js": ["content.js"]
+      "matches": [
+        "https://meet.google.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ]
 }

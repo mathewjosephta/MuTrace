@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MuTrace Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>MuTrace Dashboard</h1>
+
+        <div class="stats">
+
+            <div class="card">
+                <h3>Total Participants</h3>
+                <h2 id="participantsCount">0</h2>
+            </div>
+
+            <div class="card">
+                <h3>Eligible</h3>
+                <h2 id="eligibleCount">0</h2>
+            </div>
+
+            <div class="card">
+                <h3>Average Attendance</h3>
+                <h2 id="averageAttendance">0%</h2>
+            </div>
+
+        </div>
+
+        <div class="actions">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search Participant"
+            >
+
+            <button id="exportBtn">
+                Export CSV
+            </button>
+        </div>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>First Join</th>
+                    <th>Last Leave</th>
+                    <th>Minutes</th>
+                    <th>Attendance %</th>
+                    <th>Eligible</th>
+                </tr>
+            </thead>
+
+            <tbody id="attendanceTable">
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <script src="dashboard.js"></script>
+
+</body>
+</html>
